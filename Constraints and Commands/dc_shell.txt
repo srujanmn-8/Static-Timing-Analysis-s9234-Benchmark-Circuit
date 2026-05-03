@@ -1,0 +1,30 @@
+ 
+# ======================= 
+# DESIGN COMPILER (DC) 
+# ======================= 
+setup library
+
+set_app_var target_library "saed90nm_typ.db" 
+set_app_var link_library "* saed90nm_typ.db" 
+
+//read your verilog file and set the top module as current design
+read_verilog s9234.v 	
+current_design s9234 
+link 
+
+//constraints setup for clock
+create_clock -name CK -period 3 [get_ports CK] 
+ 
+set_input_delay 0.1 -clock CK [remove_from_collection [all_inputs] [get_ports CK]] 
+set_output_delay 0.1 -clock CK [all_outputs] 
+ 
+set_input_transition 0.05 [remove_from_collection [all_inputs] [get_ports CK]] 
+set_load 0.01 [all_outputs] 
+ 
+compile_ultra 
+
+//gate level netlist generation
+write -format verilog -hierarchy -output s9234_synth.v 
+
+//write constraints into sdc format
+write_sdc s9234.sdc

@@ -1,0 +1,46 @@
+======================= 
+# PRIMETIME (PT) 
+# ======================= 
+ 
+set_app_var link_path "* saed90nm_typ.db" 
+ 
+read_verilog s9234_synth.v 
+link_design s9234 
+current_design s9234 
+
+//read the sdc file written during dc_shell
+read_sdc s9234.sdc 
+
+//update timing is compiling in primetime with new timing info
+update_timing 
+ 
+check_timing 
+report_analysis_coverage 
+report_clocks 
+ 
+# Setup Analysis 
+report_timing -delay_type max -path_type full -nworst 5 
+ 
+# Hold Analysis 
+report_timing -delay_type min -path_type full -nworst 5 
+ 
+# QoR Summary 
+report_qor 
+ 
+# Detailed Timing (for report explanation) 
+report_timing -path_type full -transition_time -capacitance -nets -nworst 3 
+ 
+# Fanout (connections) 
+redirect net_conn.rpt { report_net -connections } 
+ 
+# Capacitance 
+redirect net_cap.rpt { report_net -cap } 
+ 
+# Port / Slew 
+report_port -verbose 
+ 
+# Save main reports 
+redirect qor.rpt { report_qor } 
+redirect setup.rpt { report_timing -delay_type max -nworst 5 } 
+redirect hold.rpt { report_timing -delay_type min -nworst 5 } 
+redirect coverage.rpt { report_analysis_coverage } 
